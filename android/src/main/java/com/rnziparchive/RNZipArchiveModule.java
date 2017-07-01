@@ -179,6 +179,9 @@ public class RNZipArchiveModule extends ReactContextBaseJavaModule {
     return fileList;
   }
 
+  // For info using entry info for progress:
+    // https://docs.oracle.com/javase/7/docs/api/java/util/zip/ZipEntry.html
+
   private void unzipStream(String zipFilePath, String destDirectory, InputStream inputStream, long totalSize) throws Exception {
     try {
       File destDir = new File(destDirectory);
