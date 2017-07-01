@@ -28,7 +28,7 @@ import java.util.zip.ZipOutputStream;
 public class RNZipArchiveModule extends ReactContextBaseJavaModule {
   private static final String TAG = RNZipArchiveModule.class.getSimpleName();
 
-  private static final int BUFFER_SIZE = 4096;
+  private static final int BUFFER_SIZE = 8192;
   private static final String PROGRESS_EVENT_NAME = "zipArchiveProgressEvent";
   private static final String EVENT_KEY_FILENAME = "filename";
   private static final String EVENT_KEY_PROGRESS = "progress";
@@ -189,31 +189,37 @@ public class RNZipArchiveModule extends ReactContextBaseJavaModule {
         destDir.mkdirs();
       }
       ZipInputStream zipIn = new ZipInputStream(inputStream);
-      BufferedInputStream bin = new BufferedInputStream(zipIn);
-
+      BufferedInputStream bin = new BufferedInputStream(zipIn, BUFFER_SIZE);
       ZipEntry entry;
 
       long extractedBytes = 0;
 
-      updateProgress(0, 1, zipFilePath); // force 0%
+      updateProgress(0, 1, ""); // force 0%
+
       File fout=null;
+      String curFileName = "";
       while((entry = zipIn.getNextEntry())!=null){
         if(entry.isDirectory()) continue;
-        fout=new File(destDirectory, entry.getName());
+        curFileName = entry.getName();
+        fout=new File(destDirectory, curFileName);
         if(!fout.exists()){
           (new File(fout.getParent())).mkdirs();
         }
         FileOutputStream out=new FileOutputStream(fout);
         BufferedOutputStream Bout=new BufferedOutputStream(out);
-        int b;
-        while((b=bin.read())!=-1){
-          Bout.write(b);
+
+        updateProgress(extractedBytes, totalSize, curFileName);
+
+        int bytesRead;
+        while((bytesRead=bin.read())!=-1){
+          Bout.write(bytesRead);
         }
+        extractedBytes += entry.getCompressedSize();
         Bout.close();
         out.close();
       }
 
-      updateProgress(1, 1, zipFilePath); // force 100%
+      updateProgress(1, 1, ""); // force 100%
       bin.close();
       zipIn.close();
     } catch (Exception ex) {
@@ -225,7 +231,7 @@ public class RNZipArchiveModule extends ReactContextBaseJavaModule {
 
   private void updateProgress(long extractedBytes, long totalSize, String zipFilePath) {
     double progress = (double) extractedBytes / (double) totalSize;
-    Log.d(TAG, String.format("updateProgress: %.0f%%", progress * 100));
+    // Log.d(TAG, String.format("updateProgress: %.0f%%", progress * 100));
 
     WritableMap map = Arguments.createMap();
     map.putString(EVENT_KEY_FILENAME, zipFilePath);
