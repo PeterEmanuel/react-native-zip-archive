@@ -29,7 +29,9 @@ RCT_EXPORT_METHOD(unzip:(NSString *)zipPath
 
     [self zipArchiveProgressEvent:0 total:1]; // force 0%
 
-    BOOL success = [RNZASSZipArchive unzipFileAtPath:zipPath toDestination:destinationPath delegate:self];
+    // BOOL success = [RNZASSZipArchive unzipFileAtPath:zipPath toDestination:destinationPath delegate:self];
+
+    BOOL success = [RNZASSZipArchive unzipFileAtPath:zipPath toDestination:destinationPath progressHandler:progressHandler completionHandler:completionHandler];
 
     [self zipArchiveProgressEvent:1 total:1]; // force 100%
 
@@ -59,6 +61,9 @@ RCT_EXPORT_METHOD(zip:(NSString *)zipPath
         NSError *error = nil;
         reject(@"zip_error", @"unable to zip", error);
     }
+}
+
+- (void)progressHandler:NSString *entry, unz_file_info zipInfo, long entryNumber, long total) {
 }
 
 - (void)zipArchiveProgressEvent:(NSInteger)loaded total:(NSInteger)total {
