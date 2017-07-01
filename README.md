@@ -2,6 +2,13 @@
 
 Zip archive utility for react-native
 
+## This is a Fork
+I want to have control over the progress callback, giving me info for each unzipped entry
+
+Do NOT rely on this fork, please use the original repo.
+
+Peter
+
 ## Installation
 
 ```bash
